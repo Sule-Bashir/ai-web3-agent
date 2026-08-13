@@ -1,0 +1,7 @@
+{
+  "name": "ai-web3-agent",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "serve ."
+  }
+}

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web3 Agent - Hackathon 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .header p { color: #9ca3af; font-size: 1.1rem; }
+        .badge {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .card {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            background: rgba(55, 65, 81, 0.5);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: #60a5fa; }
+        .input-group input::placeholder { color: #6b7280; }
+        .btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            font-size: 1rem;
+        }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-wallet {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        .btn-wallet:hover { transform: translateY(-2px); opacity: 0.9; }
+        .examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .examples button {
+            padding: 6px 14px;
+            background: rgba(55, 65, 81, 0.5);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 8px;
+            color: #9ca3af;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .examples button:hover { background: rgba(55, 65, 81, 0.8); color: white; }
+        .response {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(17, 24, 39, 0.6);
+            border-radius: 12px;
+            border-left: 3px solid #60a5fa;
+            min-height: 60px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .response.error { border-left-color: #ef4444; }
+        .history {
+            margin-top: 20px;
+        }
+        .history h3 {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .history-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 14px;
+            background: rgba(31, 41, 55, 0.4);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .history-item .cmd { color: #60a5fa; font-weight: 500; }
+        .history-item .arrow { color: #6b7280; }
+        .history-item .resp { color: #4ade80; }
+        .footer {
+            text-align: center;
+            padding: 30px 0 20px;
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        .footer a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+        .wallet-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .input-group input { min-width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Web3 Agent</h1>
+            <p>Intelligent on-chain assistant for Web3 automation</p>
+            <div class="badge">🚀 Live Demo • Track 2</div>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="commandInput" 
+                    placeholder='e.g., "Swap 5 USDC to ETH on Arbitrum"'
+                    onkeypress="if(event.key==='Enter') executeCommand()"
+                />
+                <button class="btn" id="executeBtn" onclick="executeCommand()">
+                    Execute
+                </button>
+            </div>
+            <div class="examples">
+                <button onclick="setCommand('Swap 10 USDC to ETH')">Swap 10 USDC to ETH</button>
+                <button onclick="setCommand('Send 5 USDT to 0x123...')">Send tokens</button>
+                <button onclick="setCommand('Bridge 1 ETH from Arbitrum to Base')">Bridge ETH</button>
+                <button onclick="setCommand('Check my balance')">Check balance</button>
+            </div>
+        </div>
+
+        <!-- NEW: Connect Wallet Button -->
+        <div class="card">
+            <button class="btn-wallet" onclick="connectWallet()">
+                🔗 Connect Wallet
+            </button>
+            <div id="walletStatus" style="display: none;" class="wallet-status">
+                <span class="wallet-dot"></span>
+                <span id="walletInfo" style="font-size: 0.9rem;">Connected: 0x742d...C79E</span>
+            </div>
+        </div>
+
+        <div class="card" id="responseCard" style="display:none;">
+            <div id="responseContent" class="response">Loading...</div>
+        </div>
+
+        <div class="card history" id="historyCard" style="display:none;">
+            <h3>📜 Command History</h3>
+            <div id="historyList"></div>
+        </div>
+
+        <div class="footer">
+            <p>Built for <a href="#" onclick="alert('NTU InnovateX Hackathon 2026\nCo-organised by NTU CCTF and SNZ')">NTU InnovateX Hackathon 2026</a> • Co-organised by NTU CCTF and SNZ</p>
+            <p style="margin-top:4px;">Built on mobile with Termux • Web3 + AI Agents</p>
+            <p style="margin-top:8px; font-size: 0.7rem; color: #4b5563;">
+                🏆 Track 2: Web3 Applications, AI Agents and Real-World Use Cases
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let history = [];
+        let walletConnected = false;
+
+        function setCommand(text) {
+            document.getElementById('commandInput').value = text;
+            executeCommand();
+        }
+
+        async function executeCommand() {
+            const input = document.getElementById('commandInput');
+            const btn = document.getElementById('executeBtn');
+            const command = input.value.trim();
+            if (!command) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Processing...';
+            
+            const responseCard = document.getElementById('responseCard');
+            const responseContent = document.getElementById('responseContent');
+            responseCard.style.display = 'block';
+            responseContent.className = 'response';
+            responseContent.textContent = '🤔 Analyzing your command...';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                const result = processCommand(command);
+                responseContent.className = 'response';
+                responseContent.textContent = result.message;
+                history.push({ command, response: result.summary });
+                updateHistory();
+            } catch (error) {
+                responseContent.className = 'response error';
+                responseContent.textContent = '❌ Error: ' + error.message;
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = 'Execute';
+        }
+
+        function processCommand(command) {
+            const lower = command.toLowerCase();
+            
+            if (lower.includes('swap') || lower.includes('exchange')) {
+                const match = command.match(/(\d+\.?\d*)\s*([A-Za-z]+)\s*(?:to|for)\s*([A-Za-z]+)/i);
+                if (match) {
+                    const amount = match[1];
+                    const tokenIn = match[2].toUpperCase();
+                    const tokenOut = match[3].toUpperCase();
+                    return {
+                        message: `✅ SWAP ORDER READY\n\n📊 Amount: ${amount} ${tokenIn}\n🔄 To: ${tokenOut}\n💡 Estimated rate: 1 ${tokenIn} ≈ 0.0${Math.floor(Math.random() * 9) + 1} ${tokenOut}\n\n⛓️ Network: Arbitrum Sepolia\n⚠️ Please confirm in your wallet`,
+                        summary: `Swap ${amount} ${tokenIn} → ${tokenOut}`
+                    };
+                }
+                return {
+                    message: `✅ SWAP COMMAND RECOGNIZED\n\nPlease specify: "Swap [amount] [token] to [token]"\nExample: "Swap 5 USDC to ETH"`,
+                    summary: 'Swap command (needs more details)'
+                };
+            }
+
+            if (lower.includes('send') || lower.includes('transfer')) {
+                const match = command.match(/send\s+(\d+\.?\d*)\s*([A-Za-z]+)\s*(?:to)?\s*([a-zA-Z0-9]+)/i);
+                if (match) {
+                    const amount = match[1];
+                    const token = match[2].toUpperCase();
+                    const address = match[3];
+                    return {
+                        message: `✅ SEND ORDER READY\n\n📦 Amount: ${amount} ${token}\n📍 To: ${address}\n⛓️ Network: Base Sepolia\n\n💡 Gas fee: ~0.0001 ETH\n⚠️ Please confirm in your wallet`,
+                        summary: `Send ${amount} ${token} → ${address.slice(0,6)}...`
+                    };
+                }
+                return {
+                    message: `✅ SEND COMMAND RECOGNIZED\n\nPlease specify: "Send [amount] [token] to [address]"\nExample: "Send 5 USDT to 0x123..."`,
+                    summary: 'Send command (needs more details)'
+                };
+            }
+
+            if (lower.includes('bridge')) {
+                const match = command.match(/bridge\s+(\d+\.?\d*)\s*([A-Za-z]+)\s*(?:from)?\s*([A-Za-z]+)\s*(?:to)?\s*([A-Za-z]+)/i);
+                if (match) {
+                    const amount = match[1];
+                    const token = match[2].toUpperCase();
+                    const fromChain = match[3];
+                    const toChain = match[4];
+                    return {
+                        message: `✅ BRIDGE ORDER READY\n\n🌉 Amount: ${amount} ${token}\n🔄 From: ${fromChain}\n🎯 To: ${toChain}\n⏱️ Estimated time: 15-30 minutes\n\n💡 Bridge fee: ~0.0005 ETH\n⚠️ Please confirm in your wallet`,
+                        summary: `Bridge ${amount} ${token} ${fromChain}→${toChain}`
+                    };
+                }
+                return {
+                    message: `✅ BRIDGE COMMAND RECOGNIZED\n\nPlease specify: "Bridge [amount] [token] from [chain] to [chain]"\nExample: "Bridge 1 ETH from Arbitrum to Base"`,
+                    summary: 'Bridge command (needs more details)'
+                };
+            }
+
+            if (lower.includes('balance') || lower.includes('check')) {
+                return {
+                    message: `💰 BALANCE CHECK\n\n📊 Your wallet:\n• ETH: 1.5 ETH\n• USDC: 2,345 USDC\n• USDT: 1,200 USDT\n\n🔗 Connected: 0x742d...C79E\n⛓️ Network: Arbitrum Sepolia`,
+                    summary: 'Balance check'
+                };
+            }
+
+            return {
+                message: `🤖 COMMAND RECOGNIZED: "${command}"\n\nI can help you with:\n• 💱 Swaps (e.g., "Swap 5 USDC to ETH")\n• 📤 Sends (e.g., "Send 10 USDT to 0x123...")\n• 🌉 Bridges (e.g., "Bridge 1 ETH from Arbitrum to Base")\n• 💰 Balance checks (e.g., "Check my balance")\n\nTry one of the examples above!`,
+                summary: `Command: ${command.slice(0, 30)}...`
+            };
+        }
+
+        function updateHistory() {
+            const card = document.getElementById('historyCard');
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                card.style.display = 'none';
+                return;
+            }
+            card.style.display = 'block';
+            list.innerHTML = history.slice(-5).reverse().map(item => `
+                <div class="history-item">
+                    <span class="cmd">➜ ${item.command}</span>
+                    <span class="arrow">→</span>
+                    <span class="resp">${item.response}</span>
+                </div>
+            `).join('');
+        }
+
+        function connectWallet() {
+            walletConnected = !walletConnected;
+            const status = document.getElementById('walletStatus');
+            const info = document.getElementById('walletInfo');
+            const btn = document.querySelector('.btn-wallet');
+            
+            if (walletConnected) {
+                status.style.display = 'flex';
+                info.textContent = '✅ Connected: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+                btn.textContent = '🔌 Disconnect Wallet';
+                btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                
+                // Show success message
+                const responseCard = document.getElementById('responseCard');
+                const responseContent = document.getElementById('responseContent');
+                responseCard.style.display = 'block';
+                responseContent.className = 'response';
+                responseContent.textContent = '🔗 WALLET CONNECTED!\n\n📍 Address: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e\n⛓️ Network: Base Sepolia\n💰 Balance: 1.5 ETH, 2,345 USDC, 1,200 USDT\n\n✅ Ready to execute commands!';
+            } else {
+                status.style.display = 'none';
+                btn.textContent = '🔗 Connect Wallet';
+                btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                
+                // Show disconnect message
+                const responseCard = document.getElementById('responseCard');
+                const responseContent = document.getElementById('responseContent');
+                responseCard.style.display = 'block';
+                responseContent.className = 'response';
+                responseContent.textContent = '🔌 Wallet disconnected. Click "Connect Wallet" to reconnect.';
+            }
+        }
+
+        // Auto-execute on load with a demo
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('commandInput').placeholder = 'Type a command or click an example above...';
+            
+            // Show a welcome message
+            const responseCard = document.getElementById('responseCard');
+            const responseContent = document.getElementById('responseContent');
+            responseCard.style.display = 'block';
+            responseContent.className = 'response';
+            responseContent.textContent = '👋 Welcome to AI Web3 Agent!\n\nTry clicking one of the example commands below:\n• Swap 10 USDC to ETH\n• Send tokens\n• Bridge ETH\n• Check balance\n\nOr type your own command!';
+        });
+    </script>
+</body>
+</html>
